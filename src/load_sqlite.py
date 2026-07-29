@@ -8,7 +8,8 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_INPUT_DIR = PROJECT_ROOT / "data" / "argyle_csv"
-DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "data" / "argyle_sqlite"
+DEFAULT_OUTPUT_DB = PROJECT_ROOT / "data" / "flh_insure_audit.db"
+LOAD_MANIFEST_TABLE = "argyle_load_manifest"
 
 
 def _latest_csv_dir(input_dir=DEFAULT_INPUT_DIR):
@@ -79,17 +80,18 @@ def _load_csv(connection, csv_path):
 
 
 def _write_load_metadata(connection, manifest):
-    connection.execute("DROP TABLE IF EXISTS load_manifest")
+    quoted_table = _sqlite_identifier(LOAD_MANIFEST_TABLE)
+    connection.execute(f"DROP TABLE IF EXISTS {quoted_table}")
     connection.execute(
-        """
-        CREATE TABLE load_manifest (
+        f"""
+        CREATE TABLE {quoted_table} (
             key TEXT PRIMARY KEY,
             value TEXT
         )
         """
     )
     connection.executemany(
-        "INSERT INTO load_manifest (key, value) VALUES (?, ?)",
+        f"INSERT INTO {quoted_table} (key, value) VALUES (?, ?)",
         ((key, json.dumps(value, sort_keys=True)) for key, value in manifest.items()),
     )
 
@@ -99,7 +101,7 @@ def load_transformed_csvs(input_dir=None, output_db=None):
     if not input_path.is_dir():
         raise NotADirectoryError(f"CSV input path must be a directory: {input_path}")
 
-    db_path = Path(output_db) if output_db else DEFAULT_OUTPUT_DIR / f"{input_path.name}.db"
+    db_path = Path(output_db) if output_db else DEFAULT_OUTPUT_DB
     db_path.parent.mkdir(parents=True, exist_ok=True)
 
     csv_paths = sorted(path for path in input_path.glob("*.csv") if path.is_file())
@@ -136,7 +138,7 @@ def main():
     parser.add_argument(
         "--output-db",
         type=Path,
-        help="SQLite database file. Defaults to data/argyle_sqlite/<csv-dir-name>.db.",
+        help="SQLite database file. Defaults to data/flh_insure_audit.db.",
     )
     args = parser.parse_args()
 

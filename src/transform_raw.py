@@ -22,6 +22,11 @@ def _load_argyle_dump(input_file):
         dump = json.load(raw_file)
 
     data = dump.get("data", dump)
+    if isinstance(data, list) and isinstance(dump, dict):
+        resource = dump.get("resource")
+        if resource and resource != "all":
+            data = {resource: data}
+
     if not isinstance(data, dict):
         raise ValueError("Argyle dump must contain a top-level object or a 'data' object.")
 
@@ -129,6 +134,7 @@ def transform_argyle_dump(input_file=None, output_dir=DEFAULT_OUTPUT_DIR):
 
     generated_files = []
     users = data.get("users", [])
+    accounts = data.get("accounts", [])
     shifts = data.get("shifts", [])
     gigs = data.get("gigs", [])
     vehicles = data.get("vehicles", [])
@@ -160,6 +166,9 @@ def transform_argyle_dump(input_file=None, output_dir=DEFAULT_OUTPUT_DIR):
             fieldnames=("user_id", "field", "position", "value"),
         )
     )
+
+    account_rows = [_flatten_record(account) for account in accounts]
+    generated_files.append(_write_csv(output_path, "accounts.csv", account_rows))
 
     shift_rows = [
         _flatten_record(shift, skip_paths={"all_datetimes.breaks"})
@@ -234,6 +243,7 @@ def transform_argyle_dump(input_file=None, output_dir=DEFAULT_OUTPUT_DIR):
         "row_counts": {
             "users": len(user_rows),
             "user_connections": len(user_connection_rows),
+            "accounts": len(account_rows),
             "shifts": len(shift_rows),
             "shift_breaks": len(shift_break_rows),
             "gigs": len(gig_rows),

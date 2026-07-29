@@ -9,8 +9,9 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_INPUT_DIR = PROJECT_ROOT / "data" / "onestepgps_reports"
-DEFAULT_OUTPUT_DB = PROJECT_ROOT / "data" / "onestepgps_sqlite" / "onestepgps_reports.db"
+DEFAULT_OUTPUT_DB = PROJECT_ROOT / "data" / "flh_insure_audit.db"
 TABLE_NAME = "drives_and_stops"
+LOAD_MANIFEST_TABLE = "onestepgps_load_manifest"
 EDT = timezone(-timedelta(hours=4), name="EDT")
 TIMESTAMP_COLUMNS = {"start_time", "end_time"}
 
@@ -98,17 +99,18 @@ def _insert_rows(connection, columns, rows):
 
 
 def _write_load_metadata(connection, manifest):
-    connection.execute("DROP TABLE IF EXISTS load_manifest")
+    quoted_table = _sqlite_identifier(LOAD_MANIFEST_TABLE)
+    connection.execute(f"DROP TABLE IF EXISTS {quoted_table}")
     connection.execute(
-        """
-        CREATE TABLE load_manifest (
+        f"""
+        CREATE TABLE {quoted_table} (
             key TEXT PRIMARY KEY,
             value TEXT
         )
         """
     )
     connection.executemany(
-        "INSERT INTO load_manifest (key, value) VALUES (?, ?)",
+        f"INSERT INTO {quoted_table} (key, value) VALUES (?, ?)",
         ((key, json.dumps(value, sort_keys=True)) for key, value in manifest.items()),
     )
 
@@ -168,7 +170,7 @@ def main():
     parser.add_argument(
         "--output-db",
         type=Path,
-        help="SQLite database file. Defaults to data/onestepgps_sqlite/onestepgps_reports.db.",
+        help="SQLite database file. Defaults to data/flh_insure_audit.db.",
     )
     args = parser.parse_args()
 
