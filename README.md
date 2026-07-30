@@ -39,7 +39,7 @@ SQLite output is written to `data/flh_insure_audit.db` by default. Each CSV is l
 
 ### Load OneStepGPS reports into SQLite
 
-Load OneStepGPS drives and stops CSV reports into a persisted SQLite database:
+Load OneStepGPS CSV reports into a persisted SQLite database:
 
 ```bash
 python3 src/load_onestepgps_sqlite.py
@@ -51,4 +51,4 @@ Or pass a specific report directory:
 python3 src/load_onestepgps_sqlite.py data/onestepgps_reports
 ```
 
-SQLite output is written to `data/flh_insure_audit.db` by default, the same database used by the Argyle loader. All CSV rows are loaded into `drives_and_stops`, load metadata is stored in `onestepgps_load_manifest`, and report timestamps are converted from EDT to UTC.
+SQLite output is written to `data/flh_insure_audit.db` by default, the same database used by the Argyle loader. Drives and stops rows are loaded into `drives_and_stops`, drive detail rows are loaded into `drive_detail_breakdown`, load metadata is stored in `onestepgps_load_manifest`, and report timestamps are converted from Eastern Time to UTC.
