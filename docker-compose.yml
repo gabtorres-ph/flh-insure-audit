@@ -1,0 +1,27 @@
+services:
+  postgis:
+    image: postgis/postgis:18-3.6-alpine
+    container_name: flh-insure-audit-postgis
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-flh_insure_audit}
+      POSTGRES_USER: ${POSTGRES_USER:-flh_insure_audit}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-flh_insure_audit}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgis_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\"",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+volumes:
+  postgis_data:
