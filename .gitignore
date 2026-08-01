@@ -2,4 +2,5 @@
 *.csv
 *.db
 *.json
-
+*.env
+.env
