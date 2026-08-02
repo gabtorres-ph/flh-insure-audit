@@ -1,0 +1,13 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "FLH Insure Audit PostGIS",
+      "Group": "Servers",
+      "Host": "postgis",
+      "Port": 5432,
+      "MaintenanceDB": "flh_insure_audit",
+      "Username": "flh_insure_audit",
+      "SSLMode": "prefer"
+    }
+  }
+}
